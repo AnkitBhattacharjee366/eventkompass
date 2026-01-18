@@ -1,9 +1,13 @@
 
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import { Category, EventItem, GroundingSource } from "../types";
 
+// Initialize the Google GenAI client using the API key from environment variables.
 const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
 
+/**
+ * Fetches events from the Gemini API based on category and location.
+ */
 export async function fetchEvents(
   category: Category, 
   location: string, 
@@ -19,9 +23,7 @@ export async function fetchEvents(
        If it's dining, provide restaurant recommendations.`;
 
   try {
-    // Determine model based on grounding requirements
-    // Maps grounding: gemini-2.5-flash
-    // Search grounding: gemini-3-flash-preview
+    // Maps grounding is only supported in Gemini 2.5 series models.
     const modelToUse = category === Category.Dining ? "gemini-2.5-flash" : "gemini-3-flash-preview";
     const tools = category === Category.Dining 
       ? [{ googleMaps: {} }] 
@@ -65,8 +67,42 @@ export async function fetchEvents(
   }
 }
 
-// Added transcribeAudio fix for the missing export error in AudioSearch.tsx
-export async function transcribeAudio(base64Audio: string, mimeType: string): Promise<string> {
+/**
+ * Classifies a search query into a category and location.
+ */
+export async function parseSearchQuery(query: string): Promise<{ category: Category; location: string | null }> {
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: `Classify the search intent: "${query}". Return the most likely category (Festivent, Sports, Dining, Career) and extract any German city name mentioned.`,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: {
+          type: Type.OBJECT,
+          properties: {
+            category: { type: Type.STRING, description: "One of: Festivent, Sports, Dining, Career" },
+            location: { type: Type.STRING, description: "The German city name extracted, or null if none found" }
+          },
+          required: ["category", "location"]
+        }
+      }
+    });
+
+    const result = JSON.parse(response.text || "{}");
+    return {
+      category: (Object.values(Category).includes(result.category as Category) ? result.category : Category.Festivent) as Category,
+      location: result.location || null
+    };
+  } catch (error) {
+    console.error("Classification Error:", error);
+    return { category: Category.Festivent, location: null };
+  }
+}
+
+/**
+ * Transcribes audio provided as a base64 encoded string using Gemini 3 Flash.
+ */
+export async function transcribeAudio(base64Audio: string, mimeType: string): Promise<string | null> {
   try {
     const response = await ai.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -74,19 +110,17 @@ export async function transcribeAudio(base64Audio: string, mimeType: string): Pr
         parts: [
           {
             inlineData: {
-              data: base64Audio,
               mimeType: mimeType,
+              data: base64Audio,
             },
           },
-          {
-            text: "Transcribe the following audio precisely. If the audio is in German, output German text. If it is in English, output English text. Return only the transcription text.",
-          },
+          { text: "Transcribe the following audio precisely. Only return the transcript without any preamble." },
         ],
       },
     });
-    return response.text || "";
+    return response.text?.trim() || null;
   } catch (error) {
     console.error("Transcription Error:", error);
-    return "";
+    return null;
   }
 }

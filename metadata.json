@@ -1,7 +1,5 @@
 {
-  "name": "EventKompass",
+  "name": "HMI_Team11",
   "description": "A premium German event discovery and booking platform featuring AI-powered search for concerts, sports, dining, and career events with real-time Google Maps and Search grounding.",
-  "requestFramePermissions": [
-    "microphone"
-  ]
+  "requestFramePermissions": []
 }

@@ -17,13 +17,12 @@ const App: React.FC = () => {
   const [lang, setLang] = useState<Language>('de');
   const [user, setUser] = useState<User | null>(null);
   const [showAuth, setShowAuth] = useState(false);
-  const [location, setLocation] = useState<string>("Darmstadt, Hessen");
+  const [location, setLocation] = useState<string>("Darmstadt");
   const [bookings, setBookings] = useState<EventItem[]>([]);
   
-  // STATE-BASED ROUTER: Navigation handled via in-memory state
+  // STATE-BASED ROUTER
   const [currentPath, setCurrentPath] = useState<string>('/');
 
-  // MANDATORY NAVIGATION FUNCTION (Attached to window for child component access)
   useEffect(() => {
     (window as any).navigate = (path: string) => {
       setCurrentPath(path);
@@ -58,12 +57,8 @@ const App: React.FC = () => {
     setBookings(prev => prev.filter(b => b.id !== eventId));
   };
 
-  // Central Render Logic for State-Based Router
   const renderContent = () => {
-    if (currentPath === '/') {
-      return <Home t={t} lang={lang} location={location} setLocation={setLocation} />;
-    }
-    
+    if (currentPath === '/') return <Home t={t} lang={lang} location={location} setLocation={setLocation} />;
     if (currentPath.startsWith('/discovery/')) {
       const category = currentPath.split('/')[2] as Category;
       return (
@@ -80,24 +75,11 @@ const App: React.FC = () => {
         />
       );
     }
-    
-    if (currentPath === '/profile') {
-      return (
-        <Profile 
-          t={t} 
-          lang={lang} 
-          user={user} 
-          bookings={bookings}
-          onCancelBooking={removeBooking}
-        />
-      );
-    }
-    
-    if (currentPath === '/about') return <AboutUs t={t} />;
-    if (currentPath === '/grievances') return <Grievances t={t} />;
-    if (currentPath === '/careers') return <Careers t={t} />;
-    if (currentPath === '/press') return <Press t={t} />;
-    
+    if (currentPath === '/profile') return <Profile t={t} lang={lang} user={user} bookings={bookings} onCancelBooking={removeBooking} />;
+    if (currentPath === '/about') return <AboutUs t={t} lang={lang} />;
+    if (currentPath === '/grievances') return <Grievances t={t} lang={lang} />;
+    if (currentPath === '/careers') return <Careers t={t} lang={lang} />;
+    if (currentPath === '/press') return <Press t={t} lang={lang} />;
     return <Home t={t} lang={lang} location={location} setLocation={setLocation} />;
   };
 
@@ -111,6 +93,8 @@ const App: React.FC = () => {
         onLoginClick={() => setShowAuth(true)}
         onLogout={handleLogout}
         currentPath={currentPath}
+        location={location}
+        setLocation={setLocation}
       />
       
       <main className="flex-grow">
@@ -128,7 +112,7 @@ const App: React.FC = () => {
               <h3 className="text-xl font-black text-white tracking-tighter uppercase">EventKompass</h3>
             </button>
             <p className="text-slate-400 text-sm leading-relaxed">
-              Dein All-in-One-Kompass für die besten Erlebnisse in ganz Deutschland. Entdecke, plane und buche in Sekunden.
+              {t.heroSubtitle}
             </p>
             <div className="flex space-x-4">
               <button type="button" className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-[#E31E24] transition-colors"><i className="fa-brands fa-instagram"></i></button>
@@ -137,7 +121,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div>
-            <h4 className="font-black uppercase tracking-widest text-xs text-[#E31E24] mb-6">Plattform</h4>
+            <h4 className="font-black uppercase tracking-widest text-xs text-[#E31E24] mb-6">{t.platform}</h4>
             <ul className="text-slate-400 text-sm space-y-3 font-medium">
               <li><button onClick={() => (window as any).navigate("/discovery/Festivent")} className="hover:text-white transition-colors">{t.festivent}</button></li>
               <li><button onClick={() => (window as any).navigate("/discovery/Sports")} className="hover:text-white transition-colors">{t.sports}</button></li>
@@ -146,21 +130,21 @@ const App: React.FC = () => {
             </ul>
           </div>
           <div>
-            <h4 className="font-black uppercase tracking-widest text-xs text-[#E31E24] mb-6">Unternehmen</h4>
+            <h4 className="font-black uppercase tracking-widest text-xs text-[#E31E24] mb-6">{t.company}</h4>
             <ul className="text-slate-400 text-sm space-y-3 font-medium">
               <li><button onClick={() => (window as any).navigate("/about")} className="hover:text-white transition-colors">{t.aboutUs}</button></li>
-              <li><button onClick={() => (window as any).navigate("/careers")} className="hover:text-white transition-colors">Karriere</button></li>
-              <li><button onClick={() => (window as any).navigate("/press")} className="hover:text-white transition-colors">Presse</button></li>
-              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">{t.grievances}</button></li>
+              <li><button onClick={() => (window as any).navigate("/careers")} className="hover:text-white transition-colors">{t.careers}</button></li>
+              <li><button onClick={() => (window as any).navigate("/press")} className="hover:text-white transition-colors">{t.press}</button></li>
+              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">{t.contactUs}</button></li>
             </ul>
           </div>
           <div>
-            <h4 className="font-black uppercase tracking-widest text-xs text-[#E31E24] mb-6">Support</h4>
+            <h4 className="font-black uppercase tracking-widest text-xs text-[#E31E24] mb-6">{t.support}</h4>
             <ul className="text-slate-400 text-sm space-y-3 font-medium">
-              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">Hilfe-Center</button></li>
-              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">Partner-Programm</button></li>
-              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">Impressum</button></li>
-              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">Datenschutz</button></li>
+              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">{t.helpCenter}</button></li>
+              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">{t.partnerProgram}</button></li>
+              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">{t.imprint}</button></li>
+              <li><button onClick={() => (window as any).navigate("/grievances")} className="hover:text-white transition-colors">{t.privacy}</button></li>
             </ul>
           </div>
         </div>

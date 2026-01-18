@@ -12,178 +12,184 @@ interface AuthModalProps {
 const AuthModal: React.FC<AuthModalProps> = ({ t, onClose, onSuccess }) => {
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
-  const [name, setName] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [mobile, setMobile] = useState("");
+  const [profileName, setProfileName] = useState("");
   const [loading, setLoading] = useState(false);
-  const [regSuccessData, setRegSuccessData] = useState<{ id: string; pass: string; email: string; name: string } | null>(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate API call
+    // Simulate "Real-Life" Registration Process & Email Dispatch
     setTimeout(() => {
       if (isLogin) {
-        // Simple mock login
-        onSuccess({
-          id: email.startsWith("EK-") ? email : "EK-98231",
-          name: name || "Gast",
-          email: email.includes("@") ? email : "user@eventkompass.de",
-          location: "Darmstadt"
-        });
+        onSuccess({ id: "EK-12345", name: fullName || "User", email, location: "Darmstadt" });
       } else {
-        // Mock Registration
-        const generatedId = `EK-${Math.floor(10000 + Math.random() * 90000)}`;
-        setRegSuccessData({
-          id: generatedId,
-          pass: password,
-          email: email,
-          name: name
-        });
+        // Trigger Success UI state for Registration
+        setShowSuccess(true);
         setLoading(false);
+        // Automatically close after a few seconds or allow manual close
+        setTimeout(() => {
+           onSuccess({ id: "EK-" + Math.floor(Math.random() * 90000 + 10000), name: fullName, email, location: "Darmstadt" });
+        }, 5000);
       }
-    }, 1500);
+    }, 2000);
   };
 
-  return (
-    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-slate-900/80 backdrop-blur-md" onClick={onClose}></div>
-      <div className="relative bg-white w-full max-w-md rounded-[3rem] shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        
-        {/* Close Button */}
-        <button 
-          onClick={onClose}
-          className="absolute top-6 right-6 w-10 h-10 flex items-center justify-center rounded-full bg-slate-100 text-slate-400 hover:text-[#E31E24] hover:bg-red-50 transition-all z-20"
-          aria-label="Close"
-        >
-          <i className="fa-solid fa-xmark text-lg"></i>
-        </button>
-
-        <div className="bg-slate-50 border-b border-slate-100 p-10 text-center">
-          <Logo className="h-16 w-16 mx-auto mb-6" />
-          <h2 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-tight">
-            {regSuccessData ? "Willkommen!" : t.authModalTitle}
-          </h2>
-          <p className="text-slate-500 text-sm mt-2 px-4">
-            {regSuccessData ? "Deine Reise beginnt hier." : t.authModalDesc}
-          </p>
-        </div>
-
-        <div className="p-10">
-          {regSuccessData ? (
-            <div className="space-y-6 animate-in slide-in-from-bottom-4 duration-500">
-              <div className="p-8 bg-white rounded-3xl border border-slate-200 shadow-inner">
-                <div className="flex items-center space-x-4 mb-6 pb-6 border-b border-slate-100">
-                  <div className="w-12 h-12 rounded-full bg-[#E31E24]/10 text-[#E31E24] flex items-center justify-center">
-                    <i className="fa-solid fa-envelope-open-text"></i>
-                  </div>
-                  <div className="text-left">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">E-Mail von EventKompass</p>
-                    <p className="text-xs font-bold text-slate-700">Betreff: Herzlich Willkommen, {regSuccessData.name}!</p>
-                  </div>
-                </div>
-                
-                <div className="text-sm text-slate-600 leading-relaxed mb-6">
-                  <p className="mb-4">Hallo {regSuccessData.name},</p>
-                  <p className="mb-4">{t.registrationSuccess}</p>
-                  <p className="mb-6">Hier sind deine Zugangsdaten für dein neues Konto:</p>
-                  
-                  <div className="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.loginId}:</span>
-                      <span className="font-mono font-black text-[#E31E24]">{regSuccessData.id}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">{t.password}:</span>
-                      <span className="font-mono font-black text-slate-800">{regSuccessData.pass}</span>
-                    </div>
-                  </div>
-                  
-                  <p className="mt-6 text-xs text-slate-400 italic text-center">Wir freuen uns darauf, dich bei deinem nächsten Event zu sehen!</p>
-                </div>
-              </div>
-
-              <button 
-                onClick={() => {
-                  setIsLogin(true);
-                  setEmail(regSuccessData.id);
-                  setRegSuccessData(null);
-                }}
-                className="w-full py-4 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-2xl hover:bg-slate-800 transition-all shadow-xl text-xs"
-              >
-                Jetzt einloggen
-              </button>
+  if (showSuccess) {
+    return (
+      <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
+        <div className="absolute inset-0 bg-slate-950/70 backdrop-blur-xl" onClick={onClose}></div>
+        <div className="relative bg-white w-full max-w-lg rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-500">
+          <div className="p-16 text-center">
+            <div className="w-24 h-24 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-4xl mx-auto mb-10 shadow-lg animate-bounce">
+              <i className="fa-solid fa-paper-plane"></i>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {!isLogin && (
-                <div>
-                  <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">{t.fullName}</label>
+            <h2 className="text-4xl font-black text-slate-900 uppercase tracking-tighter mb-6">{t.welcomeMailSent}</h2>
+            <p className="text-slate-500 font-medium text-lg leading-relaxed mb-10">
+              {t.welcomeMailDesc.replace('{email}', email)}
+            </p>
+            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 text-left mb-10">
+               <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Credentials Preview</p>
+               <div className="flex justify-between items-center mb-2">
+                 <span className="text-xs font-bold text-slate-500 uppercase">Username:</span>
+                 <span className="text-xs font-black text-slate-900">{profileName}</span>
+               </div>
+               <div className="flex justify-between items-center">
+                 <span className="text-xs font-bold text-slate-500 uppercase">Password:</span>
+                 <span className="text-xs font-black text-slate-900">••••••••</span>
+               </div>
+            </div>
+            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden">
+               <div className="h-full bg-emerald-500 animate-[progress_5s_linear_forwards]"></div>
+            </div>
+            <style>{`
+              @keyframes progress {
+                from { width: 0%; }
+                to { width: 100%; }
+              }
+            `}</style>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center p-6">
+      <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md" onClick={onClose}></div>
+      <div className="relative bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in duration-300">
+        <div className="p-10 sm:p-14 text-center">
+          <Logo className="h-12 w-12 mx-auto mb-8" />
+          <h2 className="text-3xl sm:text-4xl font-black text-slate-900 uppercase tracking-tighter mb-4">{isLogin ? t.login : t.register}</h2>
+          <p className="text-slate-400 text-sm font-medium mb-12">{isLogin ? t.authModalDesc : "Erstellen Sie Ihr Profil für exklusiven Zugang."}</p>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {!isLogin && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block ml-4">{t.fullName}</label>
                   <div className="relative">
-                    <i className="fa-solid fa-user absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                    <i className="fa-solid fa-user absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
                     <input 
                       type="text" 
                       required 
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#E31E24] focus:bg-white transition-all font-medium text-slate-800"
-                      placeholder="Max Mustermann"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full pl-14 pr-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-[#E31E24] transition-all font-bold text-sm"
+                      placeholder="John Doe"
+                    />
+                  </div>
+                </div>
+                <div className="text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block ml-4">{t.mobileNumber}</label>
+                  <div className="relative">
+                    <i className="fa-solid fa-phone absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                    <input 
+                      type="tel" 
+                      required 
+                      value={mobile}
+                      onChange={(e) => setMobile(e.target.value)}
+                      className="w-full pl-14 pr-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-[#E31E24] transition-all font-bold text-sm"
+                      placeholder="+49 123 456789"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className={`grid grid-cols-1 ${!isLogin ? 'sm:grid-cols-2' : ''} gap-6`}>
+              <div className="text-left">
+                <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block ml-4">{t.email}</label>
+                <div className="relative">
+                  <i className="fa-solid fa-envelope absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                  <input 
+                    type="email" 
+                    required 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="w-full pl-14 pr-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-[#E31E24] transition-all font-bold text-sm"
+                    placeholder="email@example.com"
+                  />
+                </div>
+              </div>
+              
+              {!isLogin && (
+                <div className="text-left">
+                  <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block ml-4">{t.profileName}</label>
+                  <div className="relative">
+                    <i className="fa-solid fa-at absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                    <input 
+                      type="text" 
+                      required 
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                      className="w-full pl-14 pr-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-[#E31E24] transition-all font-bold text-sm"
+                      placeholder="username123"
                     />
                   </div>
                 </div>
               )}
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">{isLogin ? t.loginId : t.email}</label>
-                <div className="relative">
-                  <i className={`fa-solid ${isLogin ? 'fa-id-badge' : 'fa-envelope'} absolute left-4 top-1/2 -translate-y-1/2 text-slate-300`}></i>
-                  <input 
-                    type={isLogin ? "text" : "email"} 
-                    required 
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#E31E24] focus:bg-white transition-all font-medium text-slate-800"
-                    placeholder={isLogin ? "EK-XXXXX" : "ihre@email.de"}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">{t.password}</label>
-                <div className="relative">
-                  <i className="fa-solid fa-lock absolute left-4 top-1/2 -translate-y-1/2 text-slate-300"></i>
-                  <input 
-                    type="password" 
-                    required 
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="w-full pl-11 pr-4 py-4 bg-slate-50 border border-slate-200 rounded-2xl outline-none focus:border-[#E31E24] focus:bg-white transition-all font-medium text-slate-800"
-                    placeholder="••••••••"
-                  />
-                </div>
-              </div>
-
-              <button 
-                type="submit" 
-                disabled={loading}
-                className="w-full bg-[#E31E24] text-white font-black py-5 rounded-2xl shadow-xl hover:bg-[#c41a1f] transition-all active:scale-[0.97] disabled:opacity-50 uppercase tracking-[0.2em] text-xs shadow-red-500/20"
-              >
-                {loading ? <i className="fa-solid fa-circle-notch animate-spin text-lg"></i> : (isLogin ? t.login : t.register)}
-              </button>
-            </form>
-          )}
-
-          {!regSuccessData && (
-            <div className="mt-10 pt-8 border-t border-slate-100 text-center">
-              <p className="text-slate-400 text-sm font-medium">
-                {isLogin ? "Noch kein Konto?" : "Bereits ein Konto?"}
-                <button 
-                  onClick={() => setIsLogin(!isLogin)}
-                  className="ml-2 text-[#E31E24] font-black hover:underline uppercase tracking-widest text-[11px]"
-                >
-                  {isLogin ? t.register : t.login}
-                </button>
-              </p>
             </div>
-          )}
+
+            <div className="text-left">
+              <label className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-2 block ml-4">{t.password}</label>
+              <div className="relative">
+                <i className="fa-solid fa-shield-halved absolute left-6 top-1/2 -translate-y-1/2 text-slate-300"></i>
+                <input 
+                  type="password" 
+                  required 
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-14 pr-8 py-5 bg-slate-50 border border-slate-100 rounded-2xl outline-none focus:bg-white focus:border-[#E31E24] transition-all font-bold text-sm"
+                  placeholder="••••••••"
+                />
+              </div>
+            </div>
+
+            <button 
+              type="submit"
+              disabled={loading}
+              className="w-full py-6 bg-slate-900 text-white font-black uppercase tracking-[0.2em] rounded-2xl shadow-xl hover:bg-[#E31E24] transition-all active:scale-95 disabled:opacity-50 mt-6 text-xs"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-4">
+                  <i className="fa-solid fa-circle-notch animate-spin"></i>
+                  {isLogin ? "LOGGING IN..." : "PREPARING WELCOME MAIL..."}
+                </span>
+              ) : (isLogin ? t.login : t.register)}
+            </button>
+          </form>
+
+          <button 
+            onClick={() => setIsLogin(!isLogin)}
+            className="mt-10 text-[11px] font-black text-slate-400 hover:text-[#E31E24] uppercase tracking-[0.3em] transition-colors"
+          >
+            {isLogin ? "Noch kein Konto? Registrieren" : "Haben Sie bereits ein Konto? Anmelden"}
+          </button>
         </div>
       </div>
     </div>
